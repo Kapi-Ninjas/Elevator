@@ -1,3 +1,5 @@
+// const { EventEmitter } = require('events');
+
 class Elevator {
     constructor() {
         this.currentFloor = 0;
@@ -5,6 +7,30 @@ class Elevator {
         this.isDoorOpen = true;
         this.callStack = [];
         this.canProccessCallStack = true;
+    }
+
+    // async callTimeout() {
+    //     return new Promise((resolve) => {
+    //         this.on('call', () => {
+    //             resolve();
+    //         });
+
+    //         setTimeout(() => {
+    //             this.processCallStack();
+    //         }, timeout);
+    //     });
+    // }
+
+    callTimeout() {
+        const initialSize = this.callStack.length;
+
+        setTimeout(() => {
+            console.log('salve');
+            console.log('this.callStack.length === initialSize', this.callStack.length === initialSize);
+            if (this.callStack.length === initialSize) {
+                this.processCallStack();
+            }
+        }, 5000);
     }
 
     isSameFloor(floor) {
@@ -32,6 +58,8 @@ class Elevator {
             floor,
             direction
         });
+
+        this.callTimeout();
     }
 
     floorCall(floor, direction) {
@@ -53,7 +81,9 @@ class Elevator {
         this.currentFloor = call.floor;
 
         this.currentDirection = this.calculateDirection(call.floor);
-
+        console.log('this', this);
         processCallStack();
     }
 }
+
+module.exports = new Elevator();
