@@ -2,7 +2,7 @@
 
 class Elevator {
     constructor() {
-        this.currentFloor = 0;
+        this.currentFloor = 2;
         this.currentDirection = 'UP';
         this.isDoorOpen = true;
         this.callStack = [];
@@ -22,14 +22,15 @@ class Elevator {
     // }
 
     callTimeout() {
-        const initialSize = this.callStack.length;
+        const initialElevatorCallsLength = this.callStack.filter(call => call.type === 'ELEVATOR').length
 
         setTimeout(() => {
-            console.log('salve');
-            console.log('this.callStack.length === initialSize', this.callStack.length === initialSize);
-            if (this.callStack.length === initialSize) {
+            const currentElevatorCallsLength = this.callStack.filter(call => call.type === 'ELEVATOR').length
+
+            if (currentElevatorCallsLength === initialElevatorCallsLength) {
+                console.log('Vai executar');
                 this.processCallStack();
-            }
+            } else { console.log('PN'); }
         }, 5000);
     }
 
@@ -37,13 +38,33 @@ class Elevator {
         return this.currentFloor === floor;
     }
 
+    sort(calls) {
+        return calls.sort((a, b) => {
+            const aDistance = this.currentFloor - a.floor;
+            const bDistance = this.currentFloor - b.floor;
+
+            return aDistance < bDistance && this.currentDirection === 'DOWN' ? 1 : -1;
+        })
+    }
+
     enqueueCallStack(call) {
         this.callStack.push(call);
 
-        // lógica de ordenação
+        const { priorityCalls, calls } = this.callStack.reduce((acc, curr) => {
+            acc[this.currentDirection === curr.direction ? 'priorityCalls' : 'calls'].push(curr);
+            return acc;
+        }, { priorityCalls: [], calls: [] });
+
+        this.callStack = [];
+
+        console.log({ priorityCalls, calls });
+
+        this.callStack.push(...this.sort(priorityCalls));
+        this.callStack.push(...this.sort(calls));
     }
 
     calculateDirection(floor) {
+        console.log(this.currentFloor, floor);
         return this.currentFloor > floor ? 'DOWN' : 'UP';
     }
 
@@ -55,6 +76,7 @@ class Elevator {
         const direction = this.calculateDirection(floor);
 
         this.enqueueCallStack({
+            type: 'ELEVATOR',
             floor,
             direction
         });
@@ -68,6 +90,7 @@ class Elevator {
         }
 
         this.enqueueCallStack({
+            type: 'FLOOR',
             floor,
             direction
         });
@@ -76,13 +99,16 @@ class Elevator {
     processCallStack() {
         if (!this.callStack.length) return;
 
+        // this.sort(this.callStack);
+
         const call = this.callStack.shift();
+
+        this.currentDirection = this.calculateDirection(call.floor);
 
         this.currentFloor = call.floor;
 
-        this.currentDirection = this.calculateDirection(call.floor);
         console.log('this', this);
-        processCallStack();
+        this.processCallStack();
     }
 }
 
