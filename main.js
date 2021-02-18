@@ -2,7 +2,7 @@
 
 class Elevator {
     constructor() {
-        this.currentFloor = 2;
+        this.currentFloor = 0;
         this.currentDirection = 'UP';
         this.isDoorOpen = true;
         this.callStack = [];
@@ -40,11 +40,33 @@ class Elevator {
     }
 
     sort(calls = this.callStack) {
-        return calls.sort((a, b) => {
-            return a.floor > b.floor
-                ? a.direction === 'DOWN' ? 1 : -1
-                : b.direction === 'UP' ? -1 : 1;
+        let priorityCalls = calls.filter(call => call.direction == this.currentDirection);
+        let nonPriorityCalls = calls.filter(call => call.direction != this.currentDirection);
+
+        priorityCalls = priorityCalls.sort((a,b) => {
+            if (this.currentDirection == 'DOWN') {
+                return a.floor > b.floor ? -1 : 1
+            } else {
+                return a.floor > b.floor ? 1 : -1
+            }
+        });
+
+        nonPriorityCalls.sort((a,b) => {
+            if (this.currentDirection == 'DOWN') {
+                return a.floor > b.floor ? 1 : -1
+            } else {
+                return a.floor > b.floor ? -1 : 1
+            }
         })
+
+        this.callStack = [...priorityCalls,...nonPriorityCalls];
+        return this.callStack;
+
+        // return calls.sort((a, b) => {
+        //     return a.floor > b.floor
+        //         ? a.direction === 'DOWN' ? 1 : -1
+        //         : a.direction === 'UP' ? -1 : 1;
+        // })
     }
 
     calculateDirection(floor) {
@@ -77,7 +99,7 @@ class Elevator {
 
         this.callStack.push({
             floor,
-            direction,
+            direction: destinyDirection,
             destinyDirection,
             type: 'FLOOR',
         });
@@ -105,7 +127,7 @@ class Elevator {
 
         this.currentFloor = call.floor;
 
-        console.log('this', this);
+        //console.log('this', this);
         this.processCallStack();
     }
 }
