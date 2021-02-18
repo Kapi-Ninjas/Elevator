@@ -1,8 +1,8 @@
 const elevator = require('./main');
 
+elevator.floorCall(3, 'DOWN');
 elevator.elevatorCall(1);
-elevator.floorCall(4, 'DOWN');
-elevator.elevatorCall(3);
+elevator.elevatorCall(4);
 
 // direction: 'UP'
 // current: 2

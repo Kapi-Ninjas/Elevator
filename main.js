@@ -29,6 +29,7 @@ class Elevator {
 
             if (currentElevatorCallsLength === initialElevatorCallsLength) {
                 console.log('Vai executar');
+                this.sort();
                 this.processCallStack();
             } else { console.log('PN'); }
         }, 5000);
@@ -38,29 +39,12 @@ class Elevator {
         return this.currentFloor === floor;
     }
 
-    sort(calls) {
+    sort(calls = this.callStack) {
         return calls.sort((a, b) => {
-            const aDistance = this.currentFloor - a.floor;
-            const bDistance = this.currentFloor - b.floor;
-
-            return aDistance < bDistance && this.currentDirection === 'DOWN' ? 1 : -1;
+            return a.floor > b.floor
+                ? a.direction === 'DOWN' ? 1 : -1
+                : b.direction === 'UP' ? -1 : 1;
         })
-    }
-
-    enqueueCallStack(call) {
-        this.callStack.push(call);
-
-        const { priorityCalls, calls } = this.callStack.reduce((acc, curr) => {
-            acc[this.currentDirection === curr.direction ? 'priorityCalls' : 'calls'].push(curr);
-            return acc;
-        }, { priorityCalls: [], calls: [] });
-
-        this.callStack = [];
-
-        console.log({ priorityCalls, calls });
-
-        this.callStack.push(...this.sort(priorityCalls));
-        this.callStack.push(...this.sort(calls));
     }
 
     calculateDirection(floor) {
@@ -75,7 +59,7 @@ class Elevator {
 
         const direction = this.calculateDirection(floor);
 
-        this.enqueueCallStack({
+        this.callStack.push({
             type: 'ELEVATOR',
             floor,
             direction
@@ -84,22 +68,36 @@ class Elevator {
         this.callTimeout();
     }
 
-    floorCall(floor, direction) {
+    floorCall(floor, destinyDirection) {
         if (this.isSameFloor(floor)) {
             return;
         }
 
-        this.enqueueCallStack({
-            type: 'FLOOR',
+        const direction = this.calculateDirection(floor);
+
+        this.callStack.push({
             floor,
-            direction
+            direction,
+            destinyDirection,
+            type: 'FLOOR',
         });
     }
 
     processCallStack() {
         if (!this.callStack.length) return;
 
-        // this.sort(this.callStack);
+        // direction: 'UP'
+        // current: 2
+        // elevator: 1D 4D
+        // floor: 3D
+        // 2-4 4-3 3-1
+
+        // [4, 1, 3]
+        // this.sort();
+
+        // const call = this.callStack.find(call => {
+        //     call.direction === this.currentDirection
+        // });
 
         const call = this.callStack.shift();
 
